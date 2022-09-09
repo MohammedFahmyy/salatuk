@@ -5,7 +5,7 @@ import 'package:salatuk/shared/cubit/states.dart';
 import '../../models/salawat_model.dart';
 
 Widget buildButtonBar(Salawat salawat) {
-  return BlocConsumer<AppCubit,AppStates>(
+  return BlocConsumer<AppCubit, AppStates>(
     listener: (context, state) {},
     builder: (context, state) {
       return Row(
@@ -20,7 +20,11 @@ Widget buildButtonBar(Salawat salawat) {
                 value: 1,
                 groupValue: salawat.status,
                 onChanged: (value) {
-                  AppCubit.get(context).changeSalahStatus(salawat, value);
+                  if (salawat.status == 1) {
+                    AppCubit.get(context).changeSalahStatus(salawat, 0);
+                  } else {
+                    AppCubit.get(context).changeSalahStatus(salawat, value);
+                  }
                 },
               ),
               SizedBox(
@@ -30,7 +34,11 @@ Widget buildButtonBar(Salawat salawat) {
                 value: 2,
                 groupValue: salawat.status,
                 onChanged: (value) {
-                  AppCubit.get(context).changeSalahStatus(salawat, value);
+                  if (salawat.status == 2) {
+                    AppCubit.get(context).changeSalahStatus(salawat, 0);
+                  } else {
+                    AppCubit.get(context).changeSalahStatus(salawat, value);
+                  }
                 },
               ),
             ],

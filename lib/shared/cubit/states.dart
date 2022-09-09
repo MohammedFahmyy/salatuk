@@ -5,3 +5,13 @@ class AppInitialState extends AppStates {}
 class AppChangeNavBarState extends AppStates {}
 
 class AppChangeSalahState extends AppStates {}
+
+class AppCreateDataBaseState extends AppStates {}
+
+class AppGetDatabaseLoadingState extends AppStates{}
+
+class AppGetDataFromDatabaseState extends AppStates{}
+
+class AppUpdateDataBaseState extends AppStates{}
+
+class AppInsertDatabaseState extends AppStates{}
