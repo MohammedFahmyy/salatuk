@@ -4,7 +4,7 @@ import 'package:salatuk/shared/cubit/cubit.dart';
 import 'package:salatuk/shared/cubit/states.dart';
 import '../../models/salawat_model.dart';
 
-Widget buildButtonBar(Salawat salawat) {
+Widget buildButtonBar(Salawat salawat,status,salah,day) {
   return BlocConsumer<AppCubit, AppStates>(
     listener: (context, state) {},
     builder: (context, state) {
@@ -13,45 +13,39 @@ Widget buildButtonBar(Salawat salawat) {
           ButtonBar(
             alignment: MainAxisAlignment.start,
             children: [
-              SizedBox(
+              const SizedBox(
                 width: 33,
               ),
               Radio(
                 value: 1,
-                groupValue: salawat.status,
+                toggleable: true,
+                groupValue: status,
                 onChanged: (value) {
-                  if (salawat.status == 1) {
-                    AppCubit.get(context).changeSalahStatus(salawat, 0);
-                  } else {
-                    AppCubit.get(context).changeSalahStatus(salawat, value);
-                  }
+                  AppCubit.get(context).updateDataBase(salah: salah, status: value, id: day);
                 },
               ),
-              SizedBox(
+              const SizedBox(
                 width: 22,
               ),
               Radio(
                 value: 2,
-                groupValue: salawat.status,
+                toggleable: true,
+                groupValue: status,
                 onChanged: (value) {
-                  if (salawat.status == 2) {
-                    AppCubit.get(context).changeSalahStatus(salawat, 0);
-                  } else {
-                    AppCubit.get(context).changeSalahStatus(salawat, value);
-                  }
+                  AppCubit.get(context).updateDataBase(salah: salah, status: value, id: day);
                 },
               ),
             ],
           ),
           Expanded(
             child: Container(
-              padding: EdgeInsets.only(
+              padding: const EdgeInsets.only(
                 right: 20,
               ),
               alignment: Alignment.centerRight,
               child: Text(
                 salawat.salah,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 20,
                 ),
               ),

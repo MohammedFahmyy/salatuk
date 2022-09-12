@@ -13,13 +13,13 @@ class AzkarScreen extends StatelessWidget {
             maximum: 30,
             showLabels: false,
             showTicks: false,
-            axisLineStyle: AxisLineStyle(
+            axisLineStyle: const AxisLineStyle(
               thickness: 0.2,
               cornerStyle: CornerStyle.bothCurve,
               color: Colors.amber,
               thicknessUnit: GaugeSizeUnit.factor,
             ),
-            pointers: <GaugePointer>[
+            pointers: const <GaugePointer>[
               RangePointer(
                 value: 20,
                 cornerStyle: CornerStyle.bothCurve,

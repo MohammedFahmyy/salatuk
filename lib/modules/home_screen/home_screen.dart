@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:salatuk/models/salawat_model.dart';
 import 'package:salatuk/shared/cubit/cubit.dart';
 import 'package:salatuk/shared/cubit/states.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
-
+import 'package:intl/intl.dart';
 import '../../shared/components/components.dart';
 
 class HomeScreen extends StatelessWidget {
+  @override
+  List<String> theDay = [
+    "اليوم",
+    "أمس",
+    theDays(DateFormat('EEEE').format(DateTime.now().subtract(const Duration(days: 2)))),
+    theDays(DateFormat('EEEE').format(DateTime.now().subtract(const Duration(days: 3)))),
+    theDays(DateFormat('EEEE').format(DateTime.now().subtract(const Duration(days: 4)))),
+    theDays(DateFormat('EEEE').format(DateTime.now().subtract(const Duration(days: 5)))),
+    theDays(DateFormat('EEEE').format(DateTime.now().subtract(const Duration(days: 6)))),
+  ];
+  int pageIndex = 0;
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AppCubit, AppStates>(
@@ -24,7 +34,7 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       Column(
                         children: [
-                          SizedBox(
+                          const SizedBox(
                             height: 15,
                           ),
                           Expanded(
@@ -38,13 +48,13 @@ class HomeScreen extends StatelessWidget {
                                       maximum: 30,
                                       showLabels: false,
                                       showTicks: false,
-                                      axisLineStyle: AxisLineStyle(
+                                      axisLineStyle: const AxisLineStyle(
                                         thickness: 0.2,
                                         cornerStyle: CornerStyle.bothCurve,
                                         color: Colors.amber,
                                         thicknessUnit: GaugeSizeUnit.factor,
                                       ),
-                                      pointers: <GaugePointer>[
+                                      pointers: const <GaugePointer>[
                                         RangePointer(
                                           value: 20,
                                           cornerStyle: CornerStyle.bothCurve,
@@ -55,18 +65,18 @@ class HomeScreen extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                Text(
+                                const Text(
                                   "عدد الأيام المتبقية 30 يوماً",
                                 ),
                               ],
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 10,
                           ),
                         ],
                       ),
-                      Center(
+                      const Center(
                         child: Text(
                           "Page 2",
                         ),
@@ -78,60 +88,179 @@ class HomeScreen extends StatelessWidget {
               Expanded(
                 flex: 2,
                 child: Container(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   width: double.infinity,
                   child: Column(
                     mainAxisSize: MainAxisSize.max,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
                       Row(
                         mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          Text(
+                          const SizedBox(
+                            width: 53,
+                          ),
+                          const Text(
                             "متأخر",
                             style: TextStyle(
                               fontSize: 18,
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 40,
                           ),
-                          Text(
+                          const Text(
                             "في وقتها",
                             style: TextStyle(
                               fontSize: 18,
                             ),
                           ),
-                          SizedBox(
-                            width: 45,
+                          const SizedBox(
+                            width: 20,
                           ),
                           Text(
-                            "2022/9/4",
+                            AppCubit.get(context).allSalawat[
+                                (AppCubit.get(context).allSalawat.length) -
+                                    1 -
+                                    pageIndex]['date'],
                             style: TextStyle(
                               fontSize: 15,
                               color: Colors.grey[400],
                             ),
                           ),
-                          Text(
-                            "    اليوم",
-                            style: TextStyle(
-                              fontSize: 20,
+                          Expanded(
+                            child: Container(
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                theDay[pageIndex],
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                ),
+                              ),
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 15,
                       ),
                       Expanded(
-                        child: ListView.builder(
-                          itemBuilder: (context, index) =>
-                              buildButtonBar(AppCubit.get(context).salawat[index]),
-                          itemCount: AppCubit.get(context).salawat.length,
+                        child: PageView(
+                          reverse: true,
+                          onPageChanged: (value) {
+                            pageIndex = value;
+                            AppCubit.get(context).changePage();
+                          },
+                          children: [
+                            ListView.builder(
+                              itemBuilder: (context, index) {
+                                return buildButtonBar(
+                                    AppCubit.get(context).salawat[index],
+                                    AppCubit.get(context).allSalawat[
+                                        (AppCubit.get(context)
+                                                .allSalawat
+                                                .length) -
+                                            1][salah(index)],
+                                    index,
+                                    (AppCubit.get(context).allSalawat.length));
+                              },
+                              itemCount: AppCubit.get(context).salawat.length,
+                            ),
+                            ListView.builder(
+                              itemBuilder: (context, index) {
+                                return buildButtonBar(
+                                    AppCubit.get(context).salawat[index],
+                                    AppCubit.get(context).allSalawat[
+                                        (AppCubit.get(context)
+                                                .allSalawat
+                                                .length) -
+                                            2][salah(index)],
+                                    index,
+                                    (AppCubit.get(context).allSalawat.length) -
+                                        1);
+                              },
+                              itemCount: AppCubit.get(context).salawat.length,
+                            ),
+                            ListView.builder(
+                              itemBuilder: (context, index) {
+                                return buildButtonBar(
+                                    AppCubit.get(context).salawat[index],
+                                    AppCubit.get(context).allSalawat[
+                                        (AppCubit.get(context)
+                                                .allSalawat
+                                                .length) -
+                                            3][salah(index)],
+                                    index,
+                                    (AppCubit.get(context).allSalawat.length) -
+                                        2);
+                              },
+                              itemCount: AppCubit.get(context).salawat.length,
+                            ),
+                            ListView.builder(
+                              itemBuilder: (context, index) {
+                                return buildButtonBar(
+                                    AppCubit.get(context).salawat[index],
+                                    AppCubit.get(context).allSalawat[
+                                        (AppCubit.get(context)
+                                                .allSalawat
+                                                .length) -
+                                            4][salah(index)],
+                                    index,
+                                    (AppCubit.get(context).allSalawat.length) -
+                                        3);
+                              },
+                              itemCount: AppCubit.get(context).salawat.length,
+                            ),
+                            ListView.builder(
+                              itemBuilder: (context, index) {
+                                return buildButtonBar(
+                                    AppCubit.get(context).salawat[index],
+                                    AppCubit.get(context).allSalawat[
+                                        (AppCubit.get(context)
+                                                .allSalawat
+                                                .length) -
+                                            5][salah(index)],
+                                    index,
+                                    (AppCubit.get(context).allSalawat.length) -
+                                        4);
+                              },
+                              itemCount: AppCubit.get(context).salawat.length,
+                            ),
+                            ListView.builder(
+                              itemBuilder: (context, index) {
+                                return buildButtonBar(
+                                    AppCubit.get(context).salawat[index],
+                                    AppCubit.get(context).allSalawat[
+                                        (AppCubit.get(context)
+                                                .allSalawat
+                                                .length) -
+                                            6][salah(index)],
+                                    index,
+                                    (AppCubit.get(context).allSalawat.length) -
+                                        5);
+                              },
+                              itemCount: AppCubit.get(context).salawat.length,
+                            ),
+                            ListView.builder(
+                              itemBuilder: (context, index) {
+                                return buildButtonBar(
+                                    AppCubit.get(context).salawat[index],
+                                    AppCubit.get(context).allSalawat[
+                                        (AppCubit.get(context)
+                                                .allSalawat
+                                                .length) -
+                                            7][salah(index)],
+                                    index,
+                                    (AppCubit.get(context).allSalawat.length -
+                                        6));
+                              },
+                              itemCount: AppCubit.get(context).salawat.length,
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -143,5 +272,43 @@ class HomeScreen extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+String salah(int salahNum) {
+  switch (salahNum) {
+    case 0:
+      return "fajr";
+    case 1:
+      return "zuhr";
+    case 2:
+      return "asr";
+    case 3:
+      return "maghrib";
+    case 4:
+      return "isha";
+    default:
+      return "";
+  }
+}
+
+String theDays(String index) {
+  switch (index) {
+    case "Saturday":
+      return "السبت";
+      case "Sunday":
+      return "الأحد";
+      case "Monday":
+      return "الإثنين";
+      case "Tuesday":
+      return "الثّلاثاء";
+      case "Wednesday":
+      return "الأربعاء";
+      case "Thursday":
+      return "الخميس";
+      case "Friday":
+      return "الجمعة";
+    default:
+      return "NULL";
   }
 }

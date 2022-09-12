@@ -15,3 +15,9 @@ class AppGetDataFromDatabaseState extends AppStates{}
 class AppUpdateDataBaseState extends AppStates{}
 
 class AppInsertDatabaseState extends AppStates{}
+
+class AppGetRowFromDatabaseLoadingState extends AppStates{}
+
+class AppGetRowFromDatabaseState extends AppStates{}
+
+class AppChangePageState extends AppStates{}
