@@ -1,4 +1,3 @@
-import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:salatuk/modules/azkar_screen/azkar_screen.dart';
 import 'package:salatuk/modules/home_screen/home_screen.dart';
@@ -6,7 +5,6 @@ import 'package:salatuk/modules/sebha_screen/sebha_screen.dart';
 import 'package:salatuk/shared/cubit/states.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sqflite/sqflite.dart';
-
 import '../../models/salawat_model.dart';
 
 class AppCubit extends Cubit<AppStates> {
@@ -14,7 +12,7 @@ class AppCubit extends Cubit<AppStates> {
   static AppCubit get(context) => BlocProvider.of(context);
   int pageIndex = 1;
   late Database db;
-  static TabBar get _tabBar => TabBar(
+  static TabBar get _tabBar => const TabBar(
         tabs: [
           Tab(
             text: "تحدي ال30 يوماً",
@@ -26,14 +24,14 @@ class AppCubit extends Cubit<AppStates> {
       );
   List<AppBar> appBars = [
     AppBar(
-      title: Text(
+      title: const Text(
         "Test",
       ),
       centerTitle: true,
     ),
     AppBar(
       elevation: 0,
-      title: Text(
+      title: const Text(
         "إلا صلاتي",
       ),
       bottom: PreferredSize(
@@ -46,7 +44,7 @@ class AppCubit extends Cubit<AppStates> {
       centerTitle: true,
     ),
     AppBar(
-      title: Text(
+      title: const Text(
         "Test",
       ),
       centerTitle: true,
@@ -55,7 +53,7 @@ class AppCubit extends Cubit<AppStates> {
   List<Widget> screens = [
     AzkarScreen(),
     HomeScreen(),
-    SebhaScreen(),
+    const SebhaScreen(),
   ];
   void changePageIndex(int index) {
     pageIndex = index;
@@ -69,7 +67,7 @@ class AppCubit extends Cubit<AppStates> {
     Salawat(status: 1, salah: "المغرب"),
     Salawat(status: 1, salah: "العشاء"),
   ];
-  //db.rawQuery('SELECT * FROM Salawat WHERE id=(SELECT max(id) FROM Salawat)')
+
   void changeSalahStatus(Salawat salah, status) {
     salah.status = status;
     emit(AppChangeSalahState());
@@ -107,17 +105,26 @@ class AppCubit extends Cubit<AppStates> {
     db.rawQuery('SELECT * FROM Salawat').then((value) {
       if (value.isEmpty) {
         DateTime date = DateTime.now();
-        date = date.subtract(Duration(days: 6));
+        date = date.subtract(const Duration(days: 6));
         for (var i = 0; i < 7; i++) {
-          insertDB(date: dateFormat(unformatted_date: date.toString()));
+          insertDB(date: date.toString().substring(0, 10));
+          date = date.add(const Duration(days: 1));
+        }
+      } else
+      {
+        DateTime appDay = DateTime.parse(value[value.length-1]['date']);
+        String todayString = DateTime.now().toString().substring(0,10);
+        DateTime today = DateTime.parse(todayString);
+        int difference = today.difference(appDay).inDays;
+        DateTime date = DateTime.now();
+        date = date.subtract(Duration(days: difference-1));
+        for (var i = 0; i < difference; i++) {
+          insertDB(date: date.toString().substring(0, 10));
           date = date.add(const Duration(days: 1));
         }
       }
       allSalawat = value;
       print(allSalawat);
-      db.rawQuery('SELECT * FROM Salawat WHERE id=(SELECT max(id)-1 FROM Salawat)').then((value){
-        print(value);
-      });
       emit(AppGetDataFromDatabaseState());
     });
   }
@@ -173,42 +180,42 @@ class AppCubit extends Cubit<AppStates> {
   }
 
   void updateDataBase({
-    required String salah,
-    required int status,
-    required String date,
+    required int salah,
+    required status,
+    required int id,
   }) {
     switch (salah) {
-      case "fajr":
-        db.rawUpdate('UPDATE Salawat SET fajr = ? WHERE date = ?',
-            [status, date]).then((value) {
+      case 0:
+        db.rawUpdate('UPDATE Salawat SET fajr = ? WHERE id = ?',
+            [status, id]).then((value) {
           emit(AppUpdateDataBaseState());
           getDataFromDB(db);
         });
         break;
-      case "zuhr":
-        db.rawUpdate('UPDATE Salawat SET zuhr = ? WHERE date = ?',
-            [status, date]).then((value) {
+      case 1:
+        db.rawUpdate('UPDATE Salawat SET zuhr = ? WHERE id = ?',
+            [status, id]).then((value) {
           emit(AppUpdateDataBaseState());
           getDataFromDB(db);
         });
         break;
-      case "asr":
-        db.rawUpdate('UPDATE Salawat SET asr = ? WHERE date = ?',
-            [status, date]).then((value) {
+      case 2:
+        db.rawUpdate('UPDATE Salawat SET asr = ? WHERE id = ?',
+            [status, id]).then((value) {
           emit(AppUpdateDataBaseState());
           getDataFromDB(db);
         });
         break;
-      case "maghrib":
-        db.rawUpdate('UPDATE Salawat SET maghrib = ? WHERE date = ?',
-            [status, date]).then((value) {
+      case 3:
+        db.rawUpdate('UPDATE Salawat SET maghrib = ? WHERE id = ?',
+            [status, id]).then((value) {
           emit(AppUpdateDataBaseState());
           getDataFromDB(db);
         });
         break;
-      case "isha":
-        db.rawUpdate('UPDATE Salawat SET isha = ? WHERE date = ?',
-            [status, date]).then((value) {
+      case 4:
+        db.rawUpdate('UPDATE Salawat SET isha = ? WHERE id = ?',
+            [status, id]).then((value) {
           emit(AppUpdateDataBaseState());
           getDataFromDB(db);
         });
@@ -220,10 +227,9 @@ class AppCubit extends Cubit<AppStates> {
     required String date,
   }) async {
     await db.transaction((txn) async {
-      txn
-          .rawInsert(
-              'INSERT INTO Salawat(date, fajr, zuhr, asr, maghrib, isha) VALUES("$date",0,0,0,0,0)')
-          .then((value) {
+      txn.rawInsert(
+          //'INSERT INTO Salawat(date, fajr, zuhr, asr, maghrib, isha) VALUES("$date",0,0,0,0,0)')
+          'INSERT INTO Salawat(date) VALUES("$date")').then((value) {
         print("$value Inserted Successfully");
         emit(AppInsertDatabaseState());
         getDataFromDB(db);
@@ -231,5 +237,23 @@ class AppCubit extends Cubit<AppStates> {
         print("Error While Inserting ${error.toString()}");
       });
     });
+  }
+
+  var certainDay;
+  var certainSalah;
+  void getRowFromDB(pageIndex, salahNum) async {
+    emit(AppGetRowFromDatabaseLoadingState());
+    await db
+        .rawQuery(
+            'SELECT * FROM Salawat WHERE id=(SELECT max(id)-${pageIndex.toString()} FROM Salawat)')
+        .then((value) {
+      certainDay = value;
+      print(certainDay);
+    });
+    emit(AppGetRowFromDatabaseState());
+  }
+
+  void changePage() {
+    emit(AppChangePageState());
   }
 }
