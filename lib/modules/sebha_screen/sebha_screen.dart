@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 class SebhaScreen extends StatelessWidget {
   const SebhaScreen({Key? key}) : super(key: key);
 
-
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text("Sebha"),
+    return Center(
+      child: SizedBox(
+        height: 10,
+        child: const Image(
+          image: AssetImage("assets/sebha.png"),
+        ),
+      ),
     );
   }
 }

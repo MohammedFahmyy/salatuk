@@ -51,9 +51,9 @@ class AppCubit extends Cubit<AppStates> {
     ),
   ];
   List<Widget> screens = [
-    AzkarScreen(),
-    HomeScreen(),
     const SebhaScreen(),
+    HomeScreen(),
+    AzkarScreen(),
   ];
   void changePageIndex(int index) {
     pageIndex = index;
@@ -81,14 +81,14 @@ class AppCubit extends Cubit<AppStates> {
         // When creating the db, create the table
         db
             .execute(
-                'CREATE TABLE Salawat (id INTEGER PRIMARY KEY,date TEXT , fajr INTEGER, zuhr INTEGER, asr INTEGER, maghrib INTEGER, isha INTEGER)')
+                'CREATE TABLE Salawat (id INTEGER PRIMARY KEY,date TEXT , fajr INTEGER, zuhr INTEGER, asr INTEGER, maghrib INTEGER, isha INTEGER,cont INTEGER,contp INTEGER)')
             .then((value) {
           print("Salawat Table Created");
           emit(AppCreateDataBaseState());
         });
       },
       onOpen: (db) {
-        getDataFromDB(db);
+        getDataOnOpenFromDB(db);
         print("DB Opened");
       },
     ).then(
@@ -99,8 +99,19 @@ class AppCubit extends Cubit<AppStates> {
   }
 
   List<Map> allSalawat = [];
+  int cont = 0;
+  int contp = 0;
 
   void getDataFromDB(db) {
+    emit(AppGetDatabaseLoadingState());
+    db.rawQuery('SELECT * FROM Salawat').then((value) {
+      allSalawat = value;
+      print(allSalawat);
+      emit(AppGetDataFromDatabaseState());
+    });
+  }
+
+  void getDataOnOpenFromDB(db) {
     emit(AppGetDatabaseLoadingState());
     db.rawQuery('SELECT * FROM Salawat').then((value) {
       if (value.isEmpty) {
@@ -110,14 +121,13 @@ class AppCubit extends Cubit<AppStates> {
           insertDB(date: date.toString().substring(0, 10));
           date = date.add(const Duration(days: 1));
         }
-      } else
-      {
-        DateTime appDay = DateTime.parse(value[value.length-1]['date']);
-        String todayString = DateTime.now().toString().substring(0,10);
+      } else {
+        DateTime appDay = DateTime.parse(value[value.length - 1]['date']);
+        String todayString = DateTime.now().toString().substring(0, 10);
         DateTime today = DateTime.parse(todayString);
         int difference = today.difference(appDay).inDays;
         DateTime date = DateTime.now();
-        date = date.subtract(Duration(days: difference-1));
+        date = date.subtract(Duration(days: difference - 1));
         for (var i = 0; i < difference; i++) {
           insertDB(date: date.toString().substring(0, 10));
           date = date.add(const Duration(days: 1));
@@ -228,8 +238,8 @@ class AppCubit extends Cubit<AppStates> {
   }) async {
     await db.transaction((txn) async {
       txn.rawInsert(
-          //'INSERT INTO Salawat(date, fajr, zuhr, asr, maghrib, isha) VALUES("$date",0,0,0,0,0)')
-          'INSERT INTO Salawat(date) VALUES("$date")').then((value) {
+          //'INSERT INTO Salawat(date, fajr, zuhr, asr, maghrib, isha,cont,contp) VALUES("$date",0,0,0,0,0,0,0)')
+          'INSERT INTO Salawat(date,cont,contp) VALUES("$date",0,0)').then((value) {
         print("$value Inserted Successfully");
         emit(AppInsertDatabaseState());
         getDataFromDB(db);
@@ -239,21 +249,74 @@ class AppCubit extends Cubit<AppStates> {
     });
   }
 
-  var certainDay;
-  var certainSalah;
-  void getRowFromDB(pageIndex, salahNum) async {
-    emit(AppGetRowFromDatabaseLoadingState());
-    await db
-        .rawQuery(
-            'SELECT * FROM Salawat WHERE id=(SELECT max(id)-${pageIndex.toString()} FROM Salawat)')
-        .then((value) {
-      certainDay = value;
-      print(certainDay);
-    });
-    emit(AppGetRowFromDatabaseState());
-  }
-
   void changePage() {
     emit(AppChangePageState());
+  }
+
+  void updateCont(int id) {
+    if (allSalawat[id - 1]['fajr'] == 2 &&
+        allSalawat[id - 1]['zuhr'] == 2 &&
+        allSalawat[id - 1]['asr'] == 2 &&
+        allSalawat[id - 1]['maghrib'] == 2 &&
+        allSalawat[id - 1]['isha'] == 2) {
+      db.rawUpdate('UPDATE Salawat SET contp = ? WHERE id = ?', [1, id]).then(
+          (value) {
+        calcContp();
+        emit(AppUpdateContpDataBaseState());
+      });
+      db.rawUpdate('UPDATE Salawat SET cont = ? WHERE id = ?', [1, id]).then(
+          (value) {
+        calcCont();
+        emit(AppUpdateContDataBaseState());
+      });
+    } else if (allSalawat[id - 1]['fajr'] != null &&
+        allSalawat[id - 1]['zuhr'] != null &&
+        allSalawat[id - 1]['asr'] != null &&
+        allSalawat[id - 1]['maghrib'] != null &&
+        allSalawat[id - 1]['isha'] != null) {
+      db.rawUpdate('UPDATE Salawat SET cont = ? WHERE id = ?', [1, id]).then(
+          (value) {
+        calcCont();
+        emit(AppUpdateContDataBaseState());
+      });
+      db.rawUpdate('UPDATE Salawat SET contp = ? WHERE id = ?', [0, id]).then(
+          (value) {
+        calcContp();
+        emit(AppUpdateContpDataBaseState());
+      });
+    } else {
+      db.rawUpdate('UPDATE Salawat SET cont = ? WHERE id = ?', [0, id]).then(
+          (value) {
+        calcCont();
+        emit(AppUpdateContDataBaseState());
+      });
+      db.rawUpdate('UPDATE Salawat SET contp = ? WHERE id = ?', [0, id]).then(
+          (value) {
+        calcContp();
+        emit(AppUpdateContpDataBaseState());
+      });
+    }
+  }
+
+  void calcCont() {
+    cont = 0;
+    for (var i = 0; i < allSalawat.length; i++) {
+      if (allSalawat[allSalawat.length - 1 - i]['cont'] == 0) {
+        break;
+      }
+      cont++;
+    }
+    print("cont = " + cont.toString());
+  }
+
+  void calcContp() {
+    contp = 0;
+    for (var i = 0; i < allSalawat.length; i++) {
+      if (allSalawat[allSalawat.length - 1 - i]['contp'] == 0) {
+        break;
+      }
+      contp++;
+    }
+    print("contp = " + contp.toString());
   }
 }

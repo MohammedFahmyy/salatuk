@@ -76,9 +76,20 @@ class HomeScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const Center(
-                        child: Text(
-                          "Page 2",
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Text(
+                              AppCubit.get(context).cont.toString(),
+                            ),
+                            Text(
+                              AppCubit.get(context).contp.toString(),
+                            ),
+                            const Text(
+                              "Last Update",
+                            ),
+                          ],
                         ),
                       ),
                     ],

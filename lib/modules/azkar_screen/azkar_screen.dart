@@ -5,7 +5,6 @@ class AzkarScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      //child: Text("data"),
       child: SfRadialGauge(
         axes: <RadialAxis>[
           RadialAxis(
@@ -14,16 +13,17 @@ class AzkarScreen extends StatelessWidget {
             showLabels: false,
             showTicks: false,
             axisLineStyle: const AxisLineStyle(
-              thickness: 0.2,
+              thickness: 0.05,
               cornerStyle: CornerStyle.bothCurve,
               color: Colors.amber,
               thicknessUnit: GaugeSizeUnit.factor,
             ),
             pointers: const <GaugePointer>[
               RangePointer(
+
                 value: 20,
-                cornerStyle: CornerStyle.bothCurve,
-                width: 0.2,
+                cornerStyle: CornerStyle.startCurve,
+                width: 0.05,
                 sizeUnit: GaugeSizeUnit.factor,
               ),
             ],
