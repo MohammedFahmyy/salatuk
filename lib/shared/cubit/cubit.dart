@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:salatuk/modules/azkar_screen/azkar_screen.dart';
 import 'package:salatuk/modules/home_screen/home_screen.dart';
-import 'package:salatuk/modules/sebha_screen/sebha_screen.dart';
 import 'package:salatuk/shared/cubit/states.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../modules/prayers_screen/prayers_screen.dart';
 import 'package:sqflite/sqflite.dart';
 import '../../models/salawat_model.dart';
+import '../../modules/azkar_screen/azkar_prescreen.dart';
+import '../constants/constants.dart';
 
 class AppCubit extends Cubit<AppStates> {
   AppCubit() : super(AppInitialState());
   static AppCubit get(context) => BlocProvider.of(context);
   int pageIndex = 1;
   late Database db;
-  static TabBar get _tabBar => const TabBar(
-        tabs: [
+  static TabBar get _tabBar =>  TabBar(
+    indicatorColor: AppColors.primary ,
+    unselectedLabelColor: Colors.grey[600],
+    labelColor: Colors.black,
+        tabs: const [
           Tab(
+
             text: "تحدي ال30 يوماً",
           ),
           Tab(
@@ -24,10 +29,16 @@ class AppCubit extends Cubit<AppStates> {
       );
   List<AppBar> appBars = [
     AppBar(
+      elevation: 0,
       title: const Text(
-        "Test",
+        "مواقيت الصلاة",
       ),
       centerTitle: true,
+      titleTextStyle: TextStyle(
+            color: AppColors.secondary,
+            fontSize: 40,
+            fontFamily: "Arabic",
+          ),
     ),
     AppBar(
       elevation: 0,
@@ -37,27 +48,37 @@ class AppCubit extends Cubit<AppStates> {
       bottom: PreferredSize(
         preferredSize: _tabBar.preferredSize,
         child: Material(
-          color: Colors.cyan, //<-- SEE HERE
+          color: Colors.transparent, //<-- SEE HERE
+          
           child: _tabBar,
+          
         ),
       ),
       centerTitle: true,
     ),
     AppBar(
+      elevation: 0,
       title: const Text(
-        "Test",
+        "",
       ),
       centerTitle: true,
     ),
   ];
+
   List<Widget> screens = [
-    const SebhaScreen(),
+    const PrayersScreen(),
     HomeScreen(),
-    AzkarScreen(),
+    const AzkarPreScreen(),
   ];
   void changePageIndex(int index) {
     pageIndex = index;
     emit(AppChangeNavBarState());
+  }
+
+  bool refreshButtonIsDisabled = true;
+  void toggleRefreshButton() {
+    refreshButtonIsDisabled = !refreshButtonIsDisabled;
+    emit(AppChangeRefreshButtonState());
   }
 
   List<Salawat> salawat = [
@@ -106,8 +127,20 @@ class AppCubit extends Cubit<AppStates> {
     emit(AppGetDatabaseLoadingState());
     db.rawQuery('SELECT * FROM Salawat').then((value) {
       allSalawat = value;
+      refreshButtonIsDisabled = false;
       print(allSalawat);
       emit(AppGetDataFromDatabaseState());
+    });
+  }
+
+  void refreshDB(db) {
+    emit(AppGetDatabaseLoadingState());
+    db.rawQuery('SELECT * FROM Salawat').then((value) {
+      allSalawat = value;
+      print(allSalawat);
+      emit(AppGetDataFromDatabaseState());
+      calcCont();
+      calcContp();
     });
   }
 
@@ -134,6 +167,8 @@ class AppCubit extends Cubit<AppStates> {
         }
       }
       allSalawat = value;
+      calcCont();
+      calcContp();
       print(allSalawat);
       emit(AppGetDataFromDatabaseState());
     });
@@ -253,48 +288,50 @@ class AppCubit extends Cubit<AppStates> {
     emit(AppChangePageState());
   }
 
-  void updateCont(int id) {
-    if (allSalawat[id - 1]['fajr'] == 2 &&
-        allSalawat[id - 1]['zuhr'] == 2 &&
-        allSalawat[id - 1]['asr'] == 2 &&
-        allSalawat[id - 1]['maghrib'] == 2 &&
-        allSalawat[id - 1]['isha'] == 2) {
-      db.rawUpdate('UPDATE Salawat SET contp = ? WHERE id = ?', [1, id]).then(
-          (value) {
-        calcContp();
-        emit(AppUpdateContpDataBaseState());
-      });
-      db.rawUpdate('UPDATE Salawat SET cont = ? WHERE id = ?', [1, id]).then(
-          (value) {
-        calcCont();
-        emit(AppUpdateContDataBaseState());
-      });
-    } else if (allSalawat[id - 1]['fajr'] != null &&
-        allSalawat[id - 1]['zuhr'] != null &&
-        allSalawat[id - 1]['asr'] != null &&
-        allSalawat[id - 1]['maghrib'] != null &&
-        allSalawat[id - 1]['isha'] != null) {
-      db.rawUpdate('UPDATE Salawat SET cont = ? WHERE id = ?', [1, id]).then(
-          (value) {
-        calcCont();
-        emit(AppUpdateContDataBaseState());
-      });
-      db.rawUpdate('UPDATE Salawat SET contp = ? WHERE id = ?', [0, id]).then(
-          (value) {
-        calcContp();
-        emit(AppUpdateContpDataBaseState());
-      });
-    } else {
-      db.rawUpdate('UPDATE Salawat SET cont = ? WHERE id = ?', [0, id]).then(
-          (value) {
-        calcCont();
-        emit(AppUpdateContDataBaseState());
-      });
-      db.rawUpdate('UPDATE Salawat SET contp = ? WHERE id = ?', [0, id]).then(
-          (value) {
-        calcContp();
-        emit(AppUpdateContpDataBaseState());
-      });
+  void updateCont() {
+    for (var id = allSalawat.length; id > 0; id--) {
+      if (allSalawat[id - 1]['fajr'] == 2 &&
+          allSalawat[id - 1]['zuhr'] == 2 &&
+          allSalawat[id - 1]['asr'] == 2 &&
+          allSalawat[id - 1]['maghrib'] == 2 &&
+          allSalawat[id - 1]['isha'] == 2) {
+        db.rawUpdate('UPDATE Salawat SET contp = ? WHERE id = ?', [1, id]).then(
+            (value) {
+          refreshDB(db);
+          emit(AppUpdateContpDataBaseState());
+        });
+        db.rawUpdate('UPDATE Salawat SET cont = ? WHERE id = ?', [1, id]).then(
+            (value) {
+          refreshDB(db);
+          emit(AppUpdateContDataBaseState());
+        });
+      } else if (allSalawat[id - 1]['fajr'] != null &&
+          allSalawat[id - 1]['zuhr'] != null &&
+          allSalawat[id - 1]['asr'] != null &&
+          allSalawat[id - 1]['maghrib'] != null &&
+          allSalawat[id - 1]['isha'] != null) {
+        db.rawUpdate('UPDATE Salawat SET cont = ? WHERE id = ?', [1, id]).then(
+            (value) {
+          refreshDB(db);
+          emit(AppUpdateContDataBaseState());
+        });
+        db.rawUpdate('UPDATE Salawat SET contp = ? WHERE id = ?', [0, id]).then(
+            (value) {
+          refreshDB(db);
+          emit(AppUpdateContpDataBaseState());
+        });
+      } else {
+        db.rawUpdate('UPDATE Salawat SET cont = ? WHERE id = ?', [0, id]).then(
+            (value) {
+          refreshDB(db);
+          emit(AppUpdateContDataBaseState());
+        });
+        db.rawUpdate('UPDATE Salawat SET contp = ? WHERE id = ?', [0, id]).then(
+            (value) {
+          refreshDB(db);
+          emit(AppUpdateContpDataBaseState());
+        });
+      }
     }
   }
 
@@ -307,6 +344,7 @@ class AppCubit extends Cubit<AppStates> {
       cont++;
     }
     print("cont = " + cont.toString());
+    emit(AppCalculateContState());
   }
 
   void calcContp() {
@@ -317,6 +355,7 @@ class AppCubit extends Cubit<AppStates> {
       }
       contp++;
     }
+    emit(AppCalculateContpState());
     print("contp = " + contp.toString());
   }
 }

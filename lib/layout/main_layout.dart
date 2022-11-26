@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:salatuk/shared/cubit/cubit.dart';
 import 'package:salatuk/shared/cubit/states.dart';
+import '../shared/constants/constants.dart';
 
 class SalatukHomeScreenLayout extends StatelessWidget {
   TabController? tabController;
-  Color? unselectedItemColor = Colors.blue[900];
-  Color selectedItemColor = Colors.white;
+  Color? unselectedItemColor = Colors.grey;
+  Color selectedItemColor = AppColors.secondary;
   int pageIndex = 1;
+
+  SalatukHomeScreenLayout({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -30,10 +33,10 @@ class SalatukHomeScreenLayout extends StatelessWidget {
               ),
               bottomNavigationBar: BottomAppBar(
                 shape: const CircularNotchedRectangle(),
-                notchMargin: 8.0,
+                notchMargin: 5.0,
                 clipBehavior: Clip.antiAlias,
                 child: SizedBox(
-                  height: 65,
+                  height: 55.5,
                   child: Container(
                     decoration: const BoxDecoration(
                       color: Colors.white,
@@ -48,31 +51,37 @@ class SalatukHomeScreenLayout extends StatelessWidget {
                       unselectedFontSize: 12,
                       selectedFontSize: 14,
                       currentIndex: AppCubit.get(context).pageIndex,
-                      backgroundColor: Colors.blue,
-                      selectedItemColor: Colors.white,
+                      backgroundColor: Colors.white,
+                      selectedItemColor: selectedItemColor,
+                      showSelectedLabels: false,
+                      showUnselectedLabels: false,
                       items: [
                         BottomNavigationBarItem(
-                            icon: SizedBox(
-                                height: 25,
-                                child: Image.asset(
-                                  "assets/sebha.png",
-                                  color: pageIndex == 0
-                                      ? selectedItemColor
-                                      : unselectedItemColor,
-                                )),
-                            label: 'تسبيح'),
+                          icon: SizedBox(
+                              height: 25,
+                              child: Image.asset(
+                                "assets/sebha.png",
+                                color: pageIndex == 0
+                                    ? selectedItemColor
+                                    : unselectedItemColor,
+                              )),
+                          label: '',
+                        ),
                         const BottomNavigationBarItem(
-                            icon: Icon(Icons.home), label: ''),
+                          icon: Icon(Icons.home),
+                          label: '',
+                        ),
                         BottomNavigationBarItem(
-                            icon: SizedBox(
-                                height: 25,
-                                child: Image.asset(
-                                  "assets/azkar.png",
-                                  color: pageIndex == 2
-                                      ? selectedItemColor
-                                      : unselectedItemColor,
-                                )),
-                            label: 'أذكار'),
+                          icon: SizedBox(
+                              height: 25,
+                              child: Image.asset(
+                                "assets/azkar.png",
+                                color: pageIndex == 2
+                                    ? selectedItemColor
+                                    : unselectedItemColor,
+                              )),
+                          label: '',
+                        ),
                       ],
                       onTap: (value) {
                         pageIndex = value;
@@ -87,10 +96,13 @@ class SalatukHomeScreenLayout extends StatelessWidget {
               floatingActionButton: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: FloatingActionButton(
-                  backgroundColor: Colors.blue,
-                  child: Icon(Icons.home,color: pageIndex == 1
-                                      ? selectedItemColor
-                                      : unselectedItemColor,),
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.home,
+                    color: pageIndex == 1
+                        ? selectedItemColor
+                        : unselectedItemColor,
+                  ),
                   onPressed: () {
                     pageIndex = 1;
                     AppCubit.get(context).changePageIndex(1);

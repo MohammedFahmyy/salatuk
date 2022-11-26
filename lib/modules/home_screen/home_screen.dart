@@ -5,17 +5,23 @@ import 'package:salatuk/shared/cubit/states.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 import 'package:intl/intl.dart';
 import '../../shared/components/components.dart';
+import '../../shared/constants/constants.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
   List<String> theDay = [
     "اليوم",
     "أمس",
-    theDays(DateFormat('EEEE').format(DateTime.now().subtract(const Duration(days: 2)))),
-    theDays(DateFormat('EEEE').format(DateTime.now().subtract(const Duration(days: 3)))),
-    theDays(DateFormat('EEEE').format(DateTime.now().subtract(const Duration(days: 4)))),
-    theDays(DateFormat('EEEE').format(DateTime.now().subtract(const Duration(days: 5)))),
-    theDays(DateFormat('EEEE').format(DateTime.now().subtract(const Duration(days: 6)))),
+    theDays(DateFormat('EEEE')
+        .format(DateTime.now().subtract(const Duration(days: 2)))),
+    theDays(DateFormat('EEEE')
+        .format(DateTime.now().subtract(const Duration(days: 3)))),
+    theDays(DateFormat('EEEE')
+        .format(DateTime.now().subtract(const Duration(days: 4)))),
+    theDays(DateFormat('EEEE')
+        .format(DateTime.now().subtract(const Duration(days: 5)))),
+    theDays(DateFormat('EEEE')
+        .format(DateTime.now().subtract(const Duration(days: 6)))),
   ];
   int pageIndex = 0;
   @override
@@ -23,76 +29,353 @@ class HomeScreen extends StatelessWidget {
     return BlocConsumer<AppCubit, AppStates>(
       listener: (context, state) {},
       builder: (context, state) {
+        var cubit = AppCubit.get(context);
         return Container(
           child: Column(
             children: [
               Expanded(
                 flex: 1,
-                child: Container(
-                  color: Colors.cyan,
-                  child: TabBarView(
-                    children: [
-                      Column(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    top: 20,
+                  ),
+                  child: Material(
+                    elevation: 20,
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(20),
+                    ),
+                    color: AppColors.secondary,
+                    child: Container(
+                      child: TabBarView(
                         children: [
-                          const SizedBox(
-                            height: 15,
-                          ),
-                          Expanded(
-                            child: Stack(
-                              alignment: Alignment.bottomCenter,
-                              children: [
-                                SfRadialGauge(
-                                  axes: <RadialAxis>[
-                                    RadialAxis(
-                                      minimum: 0,
-                                      maximum: 30,
-                                      showLabels: false,
-                                      showTicks: false,
-                                      axisLineStyle: const AxisLineStyle(
-                                        thickness: 0.2,
-                                        cornerStyle: CornerStyle.bothCurve,
-                                        color: Colors.amber,
-                                        thicknessUnit: GaugeSizeUnit.factor,
+                          Column(
+                            children: [
+                              const SizedBox(
+                                height: 15,
+                              ),
+                              Expanded(
+                                child: Stack(
+                                  alignment: Alignment.bottomCenter,
+                                  children: [
+                                    SfRadialGauge(
+                                      axes: <RadialAxis>[
+                                        RadialAxis(
+                                          isInversed: true,
+                                          minimum: 0,
+                                          maximum: 30,
+                                          showLabels: false,
+                                          showTicks: false,
+                                          axisLineStyle: const AxisLineStyle(
+                                            thickness: 0.115,
+                                            cornerStyle: CornerStyle.bothCurve,
+                                            thicknessUnit: GaugeSizeUnit.factor,
+                                          ),
+                                          pointers: <GaugePointer>[
+                                            RangePointer(
+                                              color: Colors.blue[100],
+                                              value: AppCubit.get(context)
+                                                  .cont
+                                                  .toDouble(),
+                                              cornerStyle:
+                                                  CornerStyle.bothCurve,
+                                              width: 0.115,
+                                              sizeUnit: GaugeSizeUnit.factor,
+                                              enableAnimation: true,
+                                            ),
+                                          ],
+                                          annotations: [
+                                            GaugeAnnotation(
+                                                widget: Text(
+                                              ' ${(AppCubit.get(context).cont).toString()}',
+                                              style: const TextStyle(
+                                                fontSize: 50,
+                                                color: Color.fromARGB(
+                                                    255, 220, 233, 243),
+                                              ),
+                                            ))
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 5,
+                                        left: 10,
                                       ),
-                                      pointers: const <GaugePointer>[
-                                        RangePointer(
-                                          value: 20,
-                                          cornerStyle: CornerStyle.bothCurve,
-                                          width: 0.2,
-                                          sizeUnit: GaugeSizeUnit.factor,
+                                      child: Container(
+                                        width: double.maxFinite,
+                                        alignment: Alignment.bottomLeft,
+                                        child: SizedBox(
+                                          
+                                          width: 40,
+                                          height: 40,
+                                          child: FittedBox(
+                                            child: FloatingActionButton(
+                                              onPressed: () {
+                                                if (!cubit
+                                                    .refreshButtonIsDisabled) {
+                                                  cubit.updateCont();
+                                                  cubit.toggleRefreshButton();
+                                                }
+                                              },
+                                              backgroundColor:
+                                                  cubit.refreshButtonIsDisabled
+                                                      ? Colors.grey[300]
+                                                      : const Color.fromARGB(
+                                                          255, 146, 187, 189),
+                                              elevation:
+                                                  cubit.refreshButtonIsDisabled
+                                                      ? 0
+                                                      : 1,
+                                              enableFeedback: false,
+                                              splashColor:
+                                                  cubit.refreshButtonIsDisabled
+                                                      ? Colors.transparent
+                                                      : null,
+                                              child: const Icon(
+                                                Icons.refresh,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        const SizedBox(
+                                          height: 5,
+                                        ),
+                                        Text(
+                                          "عدد الأيام المتبقية ${(30 - AppCubit.get(context).cont).toString()} يوماً",
+                                          style: const TextStyle(
+                                            color: Color.fromARGB(
+                                                255, 220, 233, 243),
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ],
                                 ),
-                                const Text(
-                                  "عدد الأيام المتبقية 30 يوماً",
-                                ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                            ],
                           ),
-                          const SizedBox(
-                            height: 10,
+                          Column(
+                            children: [
+                              const SizedBox(
+                                height: 15,
+                              ),
+                              Expanded(
+                                child:Stack(
+                                  alignment: Alignment.bottomCenter,
+                                  children: [
+                                    SfRadialGauge(
+                                      axes: <RadialAxis>[
+                                        RadialAxis(
+                                          isInversed: true,
+                                          minimum: 0,
+                                          maximum: 30,
+                                          showLabels: false,
+                                          showTicks: false,
+                                          axisLineStyle: const AxisLineStyle(
+                                            thickness: 0.115,
+                                            cornerStyle: CornerStyle.bothCurve,
+                                            thicknessUnit: GaugeSizeUnit.factor,
+                                          ),
+                                          pointers: <GaugePointer>[
+                                            RangePointer(
+                                              color: Colors.blue[100],
+                                              value: AppCubit.get(context)
+                                                  .contp
+                                                  .toDouble(),
+                                              cornerStyle:
+                                                  CornerStyle.bothCurve,
+                                              width: 0.115,
+                                              sizeUnit: GaugeSizeUnit.factor,
+                                              enableAnimation: true,
+                                            ),
+                                          ],
+                                          annotations: [
+                                            GaugeAnnotation(
+                                                widget: Text(
+                                              ' ${(AppCubit.get(context).contp).toString()}',
+                                              style: const TextStyle(
+                                                fontSize: 50,
+                                                color: Color.fromARGB(
+                                                    255, 220, 233, 243),
+                                              ),
+                                            ))
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 5,
+                                        left: 10,
+                                      ),
+                                      child: Container(
+                                        width: double.maxFinite,
+                                        alignment: Alignment.bottomLeft,
+                                        child: SizedBox(
+                                          
+                                          width: 40,
+                                          height: 40,
+                                          child: FittedBox(
+                                            child: FloatingActionButton(
+                                              onPressed: () {
+                                                if (!cubit
+                                                    .refreshButtonIsDisabled) {
+                                                  cubit.updateCont();
+                                                  cubit.toggleRefreshButton();
+                                                }
+                                              },
+                                              backgroundColor:
+                                                  cubit.refreshButtonIsDisabled
+                                                      ? Colors.grey[300]
+                                                      : const Color.fromARGB(
+                                                          255, 146, 187, 189),
+                                              elevation:
+                                                  cubit.refreshButtonIsDisabled
+                                                      ? 0
+                                                      : 1,
+                                              enableFeedback: false,
+                                              splashColor:
+                                                  cubit.refreshButtonIsDisabled
+                                                      ? Colors.transparent
+                                                      : null,
+                                              child: const Icon(
+                                                Icons.refresh,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        const SizedBox(
+                                          height: 5,
+                                        ),
+                                        Text(
+                                          "عدد الأيام المتبقية ${(30 - AppCubit.get(context).contp).toString()} يوماً",
+                                          style: const TextStyle(
+                                            color: Color.fromARGB(
+                                                255, 220, 233, 243),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                // Stack(
+                                //   alignment: Alignment.bottomCenter,
+                                //   children: [
+                                //     SfRadialGauge(
+                                //       axes: <RadialAxis>[
+                                //         RadialAxis(
+                                //           isInversed: true,
+                                //           minimum: 0,
+                                //           maximum: 30,
+                                //           showLabels: false,
+                                //           showTicks: false,
+                                //           axisLineStyle: const AxisLineStyle(
+                                //             thickness: 0.115,
+                                //             cornerStyle: CornerStyle.bothCurve,
+                                //             thicknessUnit: GaugeSizeUnit.factor,
+                                //           ),
+                                //           pointers: <GaugePointer>[
+                                //             RangePointer(
+                                //               gradient: const SweepGradient(
+                                //                 colors: [
+                                //                   Color(0xFF2E3192),
+                                //                   Color(0xFF1BFFFF),
+                                //                 ],
+                                //                 stops: [0.25, 0.75],
+                                //               ),
+                                //               value: AppCubit.get(context)
+                                //                   .contp
+                                //                   .toDouble(),
+                                //               cornerStyle:
+                                //                   CornerStyle.bothCurve,
+                                //               width: 0.115,
+                                //               sizeUnit: GaugeSizeUnit.factor,
+                                //               enableAnimation: true,
+                                //             ),
+                                //           ],
+                                //           annotations: [
+                                //             GaugeAnnotation(
+                                //                 widget: Text(
+                                //               ' ${(AppCubit.get(context).contp).toString()}',
+                                //               style:
+                                //                   const TextStyle(fontSize: 50),
+                                //             ))
+                                //           ],
+                                //         ),
+                                //       ],
+                                //     ),
+                                //     Column(
+                                //       mainAxisAlignment: MainAxisAlignment.end,
+                                //       mainAxisSize: MainAxisSize.max,
+                                //       children: [
+                                //         SizedBox(
+                                //           width: 30,
+                                //           height: 30,
+                                //           child: FittedBox(
+                                //             child: FloatingActionButton(
+                                //               onPressed: () {
+                                //                 if (!cubit
+                                //                     .refreshButtonIsDisabled) {
+                                //                   cubit.updateCont();
+                                //                   cubit.toggleRefreshButton();
+                                //                 }
+                                //               },
+                                //               backgroundColor:
+                                //                   cubit.refreshButtonIsDisabled
+                                //                       ? Colors.grey
+                                //                       : Colors.blue,
+                                //               elevation:
+                                //                   cubit.refreshButtonIsDisabled
+                                //                       ? 0
+                                //                       : 1,
+                                //               enableFeedback: false,
+                                //               splashColor:
+                                //                   cubit.refreshButtonIsDisabled
+                                //                       ? Colors.transparent
+                                //                       : null,
+                                //               child: const Icon(
+                                //                 Icons.refresh,
+                                //               ),
+                                //             ),
+                                //           ),
+                                //         ),
+                                //         const SizedBox(
+                                //           height: 5,
+                                //         ),
+                                //         Text(
+                                //           "عدد الأيام المتبقية ${(30 - AppCubit.get(context).contp).toString()} يوماً",
+                                //         ),
+                                //       ],
+                                //     ),
+                                //   ],
+                                // ),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Text(
-                              AppCubit.get(context).cont.toString(),
-                            ),
-                            Text(
-                              AppCubit.get(context).contp.toString(),
-                            ),
-                            const Text(
-                              "Last Update",
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -113,16 +396,16 @@ class HomeScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           const SizedBox(
-                            width: 53,
+                            width: 45,
                           ),
                           const Text(
-                            "متأخر",
+                            "بعد وقتها",
                             style: TextStyle(
                               fontSize: 18,
                             ),
                           ),
                           const SizedBox(
-                            width: 40,
+                            width: 25,
                           ),
                           const Text(
                             "في وقتها",
@@ -307,17 +590,17 @@ String theDays(String index) {
   switch (index) {
     case "Saturday":
       return "السبت";
-      case "Sunday":
+    case "Sunday":
       return "الأحد";
-      case "Monday":
+    case "Monday":
       return "الإثنين";
-      case "Tuesday":
+    case "Tuesday":
       return "الثّلاثاء";
-      case "Wednesday":
+    case "Wednesday":
       return "الأربعاء";
-      case "Thursday":
+    case "Thursday":
       return "الخميس";
-      case "Friday":
+    case "Friday":
       return "الجمعة";
     default:
       return "NULL";

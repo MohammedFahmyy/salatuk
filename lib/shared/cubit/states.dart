@@ -25,3 +25,9 @@ class AppChangePageState extends AppStates{}
 class AppUpdateContDataBaseState extends AppStates{}
 
 class AppUpdateContpDataBaseState extends AppStates{}
+
+class AppCalculateContState extends AppStates{}
+
+class AppCalculateContpState extends AppStates{}
+
+class AppChangeRefreshButtonState extends AppStates{}
